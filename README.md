@@ -1,4 +1,4 @@
-# cminusminus
+# c--
 
 Linguagem interpretada para calculos matematicos simples, destinada ao
 aprendizado de analise lexica, analise sintatica e interpretacao.
