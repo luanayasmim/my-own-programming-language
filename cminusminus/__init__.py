@@ -1,6 +1,5 @@
 from .errors import EvaluationError, LanguageError
-from .ast_nodes import Node
-from .ast_nodes import Statement
+from .ast_nodes import Node, Statement, Value
 from .evaluator import evaluate, execute
 from .parser import parse, parse_statement
 
@@ -27,14 +26,14 @@ def compile_statement(source: str) -> Statement:
         raise EvaluationError("Comando excede o limite de profundidade") from error
 
 
-def run_statement(source: str, variables: dict[str, int | float]) -> int | float | None:
+def run_statement(source: str, variables: dict[str, Value]) -> Value | None:
     try:
         return execute(compile_statement(source), variables)
     except RecursionError as error:
         raise EvaluationError("Comando excede o limite de profundidade") from error
 
 
-def run_expression(source: str) -> int | float:
+def run_expression(source: str) -> Value:
     try:
         return evaluate(compile_expression(source))
     except RecursionError as error:

@@ -9,15 +9,19 @@ from .ast_nodes import (
     Node,
     Number,
     ShowStatement,
+    StringLiteral,
     Statement,
     UnaryOperation,
+    Value,
     Variable,
 )
 from .errors import EvaluationError
 
 
-def evaluate(node: Node, variables: MutableMapping[str, int | float] | None = None) -> int | float:
+def evaluate(node: Node, variables: MutableMapping[str, Value] | None = None) -> Value:
     if isinstance(node, Number):
+        return node.value
+    if isinstance(node, StringLiteral):
         return node.value
     if isinstance(node, Variable):
         if variables is None or node.name not in variables:
@@ -25,6 +29,8 @@ def evaluate(node: Node, variables: MutableMapping[str, int | float] | None = No
         return variables[node.name]
     if isinstance(node, UnaryOperation):
         value = evaluate(node.operand, variables)
+        if isinstance(value, str):
+            raise EvaluationError("Operador unario requer um valor numerico", node.position)
         if node.operator == "+":
             return value
         if node.operator == "-":
@@ -35,15 +41,27 @@ def evaluate(node: Node, variables: MutableMapping[str, int | float] | None = No
         right = evaluate(node.right, variables)
         try:
             if node.operator == "+":
+                if isinstance(left, str) or isinstance(right, str):
+                    try:
+                        return str(left) + str(right)
+                    except ValueError as error:
+                        raise EvaluationError(
+                            "Valor excede o limite para concatenacao", node.position
+                        ) from error
                 result = left + right
-            elif node.operator == "-":
-                result = left - right
-            elif node.operator == "*":
-                result = left * right
-            elif node.operator == "/":
-                if right == 0:
-                    raise EvaluationError("Divisao por zero", node.position)
-                result = left / right
+            elif node.operator in ("-", "*", "/"):
+                if isinstance(left, str) or isinstance(right, str):
+                    raise EvaluationError(
+                        f"Operador '{node.operator}' requer valores numericos", node.position
+                    )
+                if node.operator == "-":
+                    result = left - right
+                elif node.operator == "*":
+                    result = left * right
+                else:
+                    if right == 0:
+                        raise EvaluationError("Divisao por zero", node.position)
+                    result = left / right
             else:
                 raise EvaluationError("Operador binario desconhecido", node.position)
         except OverflowError as error:
@@ -55,8 +73,8 @@ def evaluate(node: Node, variables: MutableMapping[str, int | float] | None = No
 
 
 def execute(
-    statement: Statement, variables: MutableMapping[str, int | float]
-) -> int | float | None:
+    statement: Statement, variables: MutableMapping[str, Value]
+) -> Value | None:
     if isinstance(statement, CreateStatement):
         if statement.name in variables:
             raise EvaluationError(

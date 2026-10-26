@@ -123,6 +123,39 @@ class LanguageTests(unittest.TestCase):
             ["CREATE", "IDENTIFIER", "=", "IDENTIFIER", "EOF"],
         )
 
+    def test_string_literals_and_concatenation(self):
+        from cminusminus import run_statement
+
+        variables = {}
+        self.assertEqual(run_statement('mostrar("O resultado e " + (2 + 3))', variables),
+                         "O resultado e 5")
+        self.assertEqual(run_statement("'valor: ' + 2.5", variables), "valor: 2.5")
+        self.assertEqual(run_statement('"linha\\nseguinte"', variables), "linha\nseguinte")
+        self.assertEqual(run_statement('"aspas: \\"ok\\""', variables), 'aspas: "ok"')
+
+    def test_string_variables_and_concatenation(self):
+        from cminusminus import run_statement
+
+        variables = {}
+        self.assertIsNone(run_statement('cria saudacao = "Ola, "', variables))
+        self.assertIsNone(run_statement('saudacao = saudacao + "mundo!"', variables))
+        self.assertEqual(run_statement("mostrar(saudacao)", variables), "Ola, mundo!")
+        self.assertEqual(run_statement('mostrar("Total: " + (10 / 2))', variables), "Total: 5.0")
+
+    def test_non_additive_string_operations_are_rejected(self):
+        from cminusminus import run_statement
+
+        for source in ('"texto" - 1', '"texto" * 2', '-"texto"'):
+            with self.subTest(source=source), self.assertRaisesRegex(
+                EvaluationError, "numeric"
+            ):
+                run_statement(source, {})
+
+    def test_invalid_string_literals(self):
+        for source in ('"sem fechamento', '"escape \\q"', '"multilinha\nstring"'):
+            with self.subTest(source=source), self.assertRaises(LexerError):
+                tokenize(source)
+
 
 if __name__ == "__main__":
     unittest.main()

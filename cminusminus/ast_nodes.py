@@ -1,9 +1,16 @@
 from dataclasses import dataclass
 
+Value = int | float | str
+
 
 @dataclass(frozen=True)
 class Number:
     value: int | float
+
+
+@dataclass(frozen=True)
+class StringLiteral:
+    value: str
 
 
 @dataclass(frozen=True)
@@ -27,7 +34,7 @@ class BinaryOperation:
     position: int
 
 
-Node = Number | Variable | UnaryOperation | BinaryOperation
+Node = Number | StringLiteral | Variable | UnaryOperation | BinaryOperation
 
 
 @dataclass(frozen=True)

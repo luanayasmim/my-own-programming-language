@@ -9,6 +9,7 @@ from .ast_nodes import (
     Number,
     ShowStatement,
     Statement,
+    StringLiteral,
     UnaryOperation,
     Variable,
 )
@@ -98,6 +99,9 @@ class Parser:
             if isinstance(value, float) and not math.isfinite(value):
                 raise ParserError("Numero excede o limite suportado", token.position)
             return Number(value)
+        if token.kind == "STRING":
+            self.advance()
+            return StringLiteral(token.text)
         if token.kind == "IDENTIFIER":
             self.advance()
             return Variable(token.text, token.position)
@@ -108,7 +112,7 @@ class Parser:
                 raise ParserError("Esperado ')'", self.current.position)
             self.advance()
             return node
-        raise ParserError("Esperado um numero ou '('", token.position)
+        raise ParserError("Esperado um numero, string ou '('", token.position)
 
 
 def parse(source: str) -> Node:

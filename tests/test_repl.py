@@ -64,6 +64,24 @@ class ReplTests(unittest.TestCase):
             self.assertEqual(result.returncode, 0, result.stderr)
             self.assertEqual(result.stdout, "14\n20\n")
 
+    def test_file_prints_concatenated_string_and_expression(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "programa.cmm"
+            path.write_text(
+                'cria nome = "Ada"\n'
+                'mostrar("Ola, " + nome + "! 2 + 3 = " + (2 + 3))\n',
+                encoding="utf-8",
+            )
+            result = subprocess.run(
+                [sys.executable, "-m", "cminusminus", "--file", str(path)],
+                capture_output=True,
+                text=True,
+                cwd=Path(__file__).resolve().parents[1],
+                timeout=10,
+            )
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertEqual(result.stdout, "Ola, Ada! 2 + 3 = 5\n")
+
     def test_file_syntax_error_prevents_execution(self):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "programa.cmm"

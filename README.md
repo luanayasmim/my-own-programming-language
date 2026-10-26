@@ -67,6 +67,7 @@ antes de executar qualquer comando; erros identificam o arquivo e a linha.
 
 - Numeros inteiros: `0`, `12`, `345`.
 - Decimais com digitos dos dois lados do ponto: `0.5`, `3.14`.
+- Strings entre aspas simples ou duplas: `"Ola"` ou `'Ola'`.
 - Operadores: `+`, `-`, `*`, `/`.
 - Agrupamento: `(2 + 3) * 4`.
 - Sinais unarios: `-5`, `+3`, `-(2 + 4)`, `2 * -3`.
@@ -74,15 +75,20 @@ antes de executar qualquer comando; erros identificam o arquivo e a linha.
 - Atribuir a variavel existente: `total = total + 6`.
 - Usar variaveis em expressoes: `total / 2`.
 - Mostrar um valor: `mostrar(total)` ou `mostrar(2 + 3)`.
+- Concatenar strings e resultados com `+`: `mostrar("Total: " + (2 + 3))`.
 - Nomes de variaveis comecam por letra ASCII ou `_` e podem conter digitos.
 - Espacos em branco entre tokens sao ignorados.
 
 `cria` declara um nome apenas uma vez; `=` atualiza somente uma variavel que ja
 foi criada. Declaracoes e atribuicoes nao exibem resultado; expressoes sozinhas
-e `mostrar(...)` exibem. Cada linha e um comando independente. Valores sao
-numericos; texto entre aspas ainda nao e suportado. Tambem nao ha comentarios,
-potencia, multiplicacao implicita ou notacao cientifica. Entradas como `.5`,
-`1.`, `1,5`, `2(3)` e `1e3` sao rejeitadas.
+e `mostrar(...)` exibem. Cada linha e um comando independente. O operador `+`
+soma dois numeros, mas concatena os valores como texto se um dos operandos for
+uma string; coloque entre parenteses expressoes numericas usadas junto de texto,
+como `"Resultado: " + (2 + 3)`. Os escapes aceitos em strings sao `\\`, `\"`,
+`\'`, `\n`, `\r` e `\t`. Os operadores `-`, `*`, `/` e os sinais unarios exigem
+valores numericos. Tambem nao ha comentarios, potencia, multiplicacao implicita
+ou notacao cientifica. Entradas como `.5`, `1.`, `1,5`, `2(3)` e `1e3` sao
+rejeitadas.
 
 ## Gramatica
 
@@ -94,8 +100,10 @@ mostrar   = "mostrar", "(", expressao, ")" ;
 expressao = termo, { ("+" | "-"), termo } ;
 termo     = unario, { ("*" | "/"), unario } ;
 unario    = ("+" | "-"), unario | primario ;
-primario  = NUMERO | IDENTIFICADOR | "(", expressao, ")" ;
+primario  = NUMERO | STRING | IDENTIFICADOR | "(", expressao, ")" ;
 NUMERO    = DIGITO, { DIGITO }, [ ".", DIGITO, { DIGITO } ] ;
+STRING    = '"', { CARACTERE | ESCAPE }, '"' | "'", { CARACTERE | ESCAPE }, "'" ;
+ESCAPE    = "\\", ("n" | "r" | "t" | "\\" | '"' | "'") ;
 DIGITO    = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" ;
 IDENTIFICADOR = (LETRA | "_"), { LETRA | DIGITO | "_" } ;
 LETRA     = "A" | ... | "Z" | "a" | ... | "z" ;

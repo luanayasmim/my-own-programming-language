@@ -3,11 +3,11 @@ from pathlib import Path
 import sys
 
 from . import compile_statement, run_expression, run_statement
-from .ast_nodes import Statement
+from .ast_nodes import Statement, Value
 from .errors import EvaluationError, LanguageError
 
 
-def format_result(value: int | float) -> str:
+def format_result(value: Value) -> str:
     try:
         return str(value)
     except ValueError as error:
@@ -39,7 +39,7 @@ def run_file(path: Path) -> int:
             print(f"Erro: {path}:{line_number}: {detail.removeprefix('Erro: ')}", file=sys.stderr)
             return 1
 
-    variables: dict[str, int | float] = {}
+    variables: dict[str, Value] = {}
     for line_number, line, statement in statements:
         try:
             result = run_statement(line, variables)
@@ -58,7 +58,7 @@ def run_file(path: Path) -> int:
 
 def repl() -> None:
     print("cminusminus")
-    variables: dict[str, int | float] = {}
+    variables: dict[str, Value] = {}
     while True:
         try:
             source = input("c--> ")

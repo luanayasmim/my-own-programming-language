@@ -22,6 +22,40 @@ def tokenize(source: str) -> list[Token]:
             tokens.append(Token(character, character, position))
             position += 1
             continue
+        if character in "\"'":
+            quote = character
+            start = position
+            position += 1
+            value: list[str] = []
+            escapes = {
+                "n": "\n",
+                "r": "\r",
+                "t": "\t",
+                "\\": "\\",
+                "\"": "\"",
+                "'": "'",
+            }
+            while position < len(source) and source[position] != quote:
+                character = source[position]
+                if character in "\r\n":
+                    raise LexerError("String nao pode atravessar linhas", position)
+                if character == "\\":
+                    escape_position = position
+                    position += 1
+                    if position == len(source):
+                        raise LexerError("Sequencia de escape incompleta", escape_position)
+                    escaped = source[position]
+                    if escaped not in escapes:
+                        raise LexerError(f"Sequencia de escape invalida: \\{escaped}", escape_position)
+                    value.append(escapes[escaped])
+                else:
+                    value.append(character)
+                position += 1
+            if position == len(source):
+                raise LexerError("String sem aspas de fechamento", start)
+            position += 1
+            tokens.append(Token("STRING", "".join(value), start))
+            continue
         if character.isascii() and (character.isalpha() or character == "_"):
             start = position
             position += 1
