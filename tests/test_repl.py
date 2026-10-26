@@ -2,12 +2,13 @@ import io
 from pathlib import Path
 import subprocess
 import sys
+import tempfile
 import unittest
 from contextlib import redirect_stderr, redirect_stdout
 from unittest.mock import patch
 
 from cminusminus.errors import EvaluationError
-from cminusminus.repl import format_result, main, repl
+from cminusminus.repl import format_result, main, repl, run_file
 
 
 class ReplTests(unittest.TestCase):
@@ -39,6 +40,50 @@ class ReplTests(unittest.TestCase):
         with redirect_stderr(output):
             self.assertEqual(main(["1 / 0"]), 1)
         self.assertIn("Divisao por zero", output.getvalue())
+
+    def test_file_execution(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "programa.cmm"
+            path.write_text("\n2 + 3 * 4\n(2 + 3) * 4\n", encoding="utf-8")
+            result = subprocess.run(
+                [sys.executable, "-m", "cminusminus", "--file", str(path)],
+                capture_output=True,
+                text=True,
+                cwd=Path(__file__).resolve().parents[1],
+                timeout=10,
+            )
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertEqual(result.stdout, "14\n20\n")
+
+    def test_file_syntax_error_prevents_execution(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "programa.cmm"
+            path.write_text("2 + 3\n1 +\n", encoding="utf-8")
+            output = io.StringIO()
+            errors = io.StringIO()
+            with redirect_stdout(output), redirect_stderr(errors):
+                self.assertEqual(run_file(path), 1)
+            self.assertEqual(output.getvalue(), "")
+            self.assertIn(f"{path}:2:", errors.getvalue())
+            self.assertIn("Esperado um numero", errors.getvalue())
+
+    def test_file_runtime_error_has_line_number(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "programa.cmm"
+            path.write_text("2 + 3\n1 / 0\n4 + 5\n", encoding="utf-8")
+            output = io.StringIO()
+            errors = io.StringIO()
+            with redirect_stdout(output), redirect_stderr(errors):
+                self.assertEqual(run_file(path), 1)
+            self.assertEqual(output.getvalue(), "5\n")
+            self.assertIn(f"{path}:2:", errors.getvalue())
+            self.assertIn("Divisao por zero", errors.getvalue())
+
+    def test_file_not_found(self):
+        errors = io.StringIO()
+        with redirect_stderr(errors):
+            self.assertEqual(run_file(Path("arquivo-inexistente.cmm")), 1)
+        self.assertIn("Erro ao ler arquivo", errors.getvalue())
 
     def test_negative_cli_expression(self):
         output = io.StringIO()

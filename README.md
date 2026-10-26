@@ -48,6 +48,18 @@ O separador `--` evita que uma expressao iniciada por `-` seja interpretada
 como uma opcao do terminal. Erros nesse modo sao enviados para a saida de
 erros e retornam codigo 1; calculos bem-sucedidos retornam codigo 0.
 
+Executar um arquivo UTF-8 com uma expressao por linha:
+
+```console
+python -m cminusminus --file programa.cmm
+```
+
+Linhas vazias sao ignoradas. O programa valida a sintaxe de todas as linhas
+antes de executar qualquer expressao; cada resultado e exibido em uma linha.
+Se ocorrer um erro, a mensagem identifica o arquivo e o numero da linha.
+O arquivo usa a mesma sintaxe de expressoes descrita abaixo; ainda nao ha
+variaveis, atribuicoes ou comandos de impressao.
+
 ## Sintaxe
 
 - Numeros inteiros: `0`, `12`, `345`.
