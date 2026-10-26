@@ -14,7 +14,10 @@ from cminusminus.repl import format_result, main, repl, run_file
 class ReplTests(unittest.TestCase):
     def test_repl_recovers_after_errors(self):
         output = io.StringIO()
-        with patch("builtins.input", side_effect=["", "1 +", "8 / 0", "2 + 3 * 4", "sair"]):
+        with patch(
+            "builtins.input",
+            side_effect=["", "1 +", "8 / 0", "cria total = 2 + 3 * 4", "mostrar(total)", "sair"],
+        ):
             with redirect_stdout(output):
                 repl()
         self.assertIn("Esperado um numero", output.getvalue())
@@ -44,7 +47,13 @@ class ReplTests(unittest.TestCase):
     def test_file_execution(self):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "programa.cmm"
-            path.write_text("\n2 + 3 * 4\n(2 + 3) * 4\n", encoding="utf-8")
+            path.write_text(
+                "cria total = 2 + 3 * 4\n"
+                "mostrar(total)\n"
+                "total = total + 6\n"
+                "mostrar(total)\n",
+                encoding="utf-8",
+            )
             result = subprocess.run(
                 [sys.executable, "-m", "cminusminus", "--file", str(path)],
                 capture_output=True,
@@ -58,7 +67,7 @@ class ReplTests(unittest.TestCase):
     def test_file_syntax_error_prevents_execution(self):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "programa.cmm"
-            path.write_text("2 + 3\n1 +\n", encoding="utf-8")
+            path.write_text("mostrar(2 + 3)\nmostrar(\n", encoding="utf-8")
             output = io.StringIO()
             errors = io.StringIO()
             with redirect_stdout(output), redirect_stderr(errors):
@@ -84,6 +93,20 @@ class ReplTests(unittest.TestCase):
         with redirect_stderr(errors):
             self.assertEqual(run_file(Path("arquivo-inexistente.cmm")), 1)
         self.assertIn("Erro ao ler arquivo", errors.getvalue())
+
+    def test_file_with_utf8_bom(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "programa.cmm"
+            path.write_text("mostrar(2 + 3)\n", encoding="utf-8-sig")
+            result = subprocess.run(
+                [sys.executable, "-m", "cminusminus", "--file", str(path)],
+                capture_output=True,
+                text=True,
+                cwd=Path(__file__).resolve().parents[1],
+                timeout=10,
+            )
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertEqual(result.stdout, "5\n")
 
     def test_negative_cli_expression(self):
         output = io.StringIO()

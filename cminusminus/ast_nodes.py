@@ -7,6 +7,12 @@ class Number:
 
 
 @dataclass(frozen=True)
+class Variable:
+    name: str
+    position: int
+
+
+@dataclass(frozen=True)
 class UnaryOperation:
     operator: str
     operand: "Node"
@@ -21,4 +27,31 @@ class BinaryOperation:
     position: int
 
 
-Node = Number | UnaryOperation | BinaryOperation
+Node = Number | Variable | UnaryOperation | BinaryOperation
+
+
+@dataclass(frozen=True)
+class ExpressionStatement:
+    expression: Node
+
+
+@dataclass(frozen=True)
+class CreateStatement:
+    name: str
+    expression: Node
+    position: int
+
+
+@dataclass(frozen=True)
+class AssignmentStatement:
+    name: str
+    expression: Node
+    position: int
+
+
+@dataclass(frozen=True)
+class ShowStatement:
+    expression: Node
+
+
+Statement = ExpressionStatement | CreateStatement | AssignmentStatement | ShowStatement

@@ -2,10 +2,9 @@ import argparse
 from pathlib import Path
 import sys
 
-from . import compile_expression, run_expression
-from .ast_nodes import Node
+from . import compile_statement, run_expression, run_statement
+from .ast_nodes import Statement
 from .errors import EvaluationError, LanguageError
-from .evaluator import evaluate
 
 
 def format_result(value: int | float) -> str:
@@ -24,25 +23,28 @@ def format_error(source: str, error: LanguageError) -> str:
 
 def run_file(path: Path) -> int:
     try:
-        source = path.read_text(encoding="utf-8")
+        source = path.read_text(encoding="utf-8-sig")
     except (OSError, UnicodeError) as error:
         print(f"Erro ao ler arquivo '{path}': {error}", file=sys.stderr)
         return 1
 
-    expressions: list[tuple[int, str, Node]] = []
+    statements: list[tuple[int, str, Statement]] = []
     for line_number, line in enumerate(source.splitlines(), start=1):
         if not line.strip():
             continue
         try:
-            expressions.append((line_number, line, compile_expression(line)))
+            statements.append((line_number, line, compile_statement(line)))
         except LanguageError as error:
             detail = format_error(line, error)
             print(f"Erro: {path}:{line_number}: {detail.removeprefix('Erro: ')}", file=sys.stderr)
             return 1
 
-    for line_number, line, expression in expressions:
+    variables: dict[str, int | float] = {}
+    for line_number, line, statement in statements:
         try:
-            print(format_result(evaluate(expression)))
+            result = run_statement(line, variables)
+            if result is not None:
+                print(format_result(result))
         except LanguageError as error:
             detail = format_error(line, error)
             print(f"Erro: {path}:{line_number}: {detail.removeprefix('Erro: ')}", file=sys.stderr)
@@ -56,6 +58,7 @@ def run_file(path: Path) -> int:
 
 def repl() -> None:
     print("cminusminus")
+    variables: dict[str, int | float] = {}
     while True:
         try:
             source = input("c--> ")
@@ -67,7 +70,9 @@ def repl() -> None:
         if not source.strip():
             continue
         try:
-            print(format_result(run_expression(source)))
+            result = run_statement(source, variables)
+            if result is not None:
+                print(format_result(result))
         except LanguageError as error:
             print(format_error(source, error))
         except KeyboardInterrupt:

@@ -21,6 +21,12 @@ python -m cminusminus
 cminusminus
 c--> 2 + 3 * 4
 14
+c--> cria total = 2 + 3 * 4
+c--> mostrar(total)
+14
+c--> total = total + 6
+c--> mostrar(total)
+20
 c--> (2 + 3) * 4
 20
 c--> -10 / 4
@@ -48,17 +54,14 @@ O separador `--` evita que uma expressao iniciada por `-` seja interpretada
 como uma opcao do terminal. Erros nesse modo sao enviados para a saida de
 erros e retornam codigo 1; calculos bem-sucedidos retornam codigo 0.
 
-Executar um arquivo UTF-8 com uma expressao por linha:
+Executar um arquivo UTF-8 com um comando por linha:
 
 ```console
 python -m cminusminus --file programa.cmm
 ```
 
 Linhas vazias sao ignoradas. O programa valida a sintaxe de todas as linhas
-antes de executar qualquer expressao; cada resultado e exibido em uma linha.
-Se ocorrer um erro, a mensagem identifica o arquivo e o numero da linha.
-O arquivo usa a mesma sintaxe de expressoes descrita abaixo; ainda nao ha
-variaveis, atribuicoes ou comandos de impressao.
+antes de executar qualquer comando; erros identificam o arquivo e a linha.
 
 ## Sintaxe
 
@@ -67,21 +70,35 @@ variaveis, atribuicoes ou comandos de impressao.
 - Operadores: `+`, `-`, `*`, `/`.
 - Agrupamento: `(2 + 3) * 4`.
 - Sinais unarios: `-5`, `+3`, `-(2 + 4)`, `2 * -3`.
+- Criar variavel: `cria total = 2 + 3 * 4`.
+- Atribuir a variavel existente: `total = total + 6`.
+- Usar variaveis em expressoes: `total / 2`.
+- Mostrar um valor: `mostrar(total)` ou `mostrar(2 + 3)`.
+- Nomes de variaveis comecam por letra ASCII ou `_` e podem conter digitos.
 - Espacos em branco entre tokens sao ignorados.
 
-Nao ha variaveis, atribuicoes, funcoes, comentarios, potencia,
-multiplicacao implicita ou notacao cientifica nesta versao.
-Entradas como `.5`, `1.`, `1,5`, `2(3)` e `1e3` sao rejeitadas.
+`cria` declara um nome apenas uma vez; `=` atualiza somente uma variavel que ja
+foi criada. Declaracoes e atribuicoes nao exibem resultado; expressoes sozinhas
+e `mostrar(...)` exibem. Cada linha e um comando independente. Valores sao
+numericos; texto entre aspas ainda nao e suportado. Tambem nao ha comentarios,
+potencia, multiplicacao implicita ou notacao cientifica. Entradas como `.5`,
+`1.`, `1,5`, `2(3)` e `1e3` sao rejeitadas.
 
 ## Gramatica
 
 ```ebnf
+comando   = declaracao | atribuicao | mostrar | expressao ;
+declaracao = "cria", IDENTIFICADOR, "=", expressao ;
+atribuicao = IDENTIFICADOR, "=", expressao ;
+mostrar   = "mostrar", "(", expressao, ")" ;
 expressao = termo, { ("+" | "-"), termo } ;
 termo     = unario, { ("*" | "/"), unario } ;
 unario    = ("+" | "-"), unario | primario ;
-primario  = NUMERO | "(", expressao, ")" ;
+primario  = NUMERO | IDENTIFICADOR | "(", expressao, ")" ;
 NUMERO    = DIGITO, { DIGITO }, [ ".", DIGITO, { DIGITO } ] ;
 DIGITO    = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" ;
+IDENTIFICADOR = (LETRA | "_"), { LETRA | DIGITO | "_" } ;
+LETRA     = "A" | ... | "Z" | "a" | ... | "z" ;
 ```
 
 Parenteses controlam o agrupamento. Sinais unarios tem precedencia sobre
@@ -94,9 +111,9 @@ O parser exige o consumo de toda a entrada.
 
 1. `lexer.py` converte o texto em tokens com suas posicoes.
 2. `parser.py` usa descida recursiva para construir a AST.
-3. `ast_nodes.py` define numeros e operacoes unarias e binarias.
-4. `evaluator.py` percorre a AST e calcula o resultado.
-5. `repl.py` recebe entradas e apresenta resultados ou erros.
+3. `ast_nodes.py` define expressoes, declaracoes, atribuicoes e comandos.
+4. `evaluator.py` percorre a AST, calcula expressoes e mantem os valores das variaveis.
+5. `repl.py` recebe comandos, mantem as variaveis e apresenta resultados ou erros.
 
 A funcao publica `run_expression` integra essas etapas:
 
@@ -123,6 +140,6 @@ python -m unittest discover -s tests -v
 ```
 
 Os testes cobrem tokens, AST, precedencia, associatividade, sinais unarios,
-decimais, sintaxe invalida, divisao por zero, limites numericos,
-profundidade e recuperacao do REPL apos erros, incluindo uma sessao
-real executada em um subprocesso.
+variaveis, comandos `mostrar`, sintaxe invalida, divisao por zero, limites
+numericos, profundidade e recuperacao do REPL apos erros, incluindo execucao
+de arquivos e sessoes reais em subprocessos.

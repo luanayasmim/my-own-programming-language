@@ -52,10 +52,18 @@ class LanguageTests(unittest.TestCase):
                     run_expression(source)
 
     def test_invalid_characters(self):
-        for source in ("abc", "2 @ 3", "1,5", ".5", "1.", "1.2.3", "1e3", "\u0661"):
+        for source in ("2 @ 3", "1,5", ".5", "1.", "1.2.3", "\u0661"):
             with self.subTest(source=source):
                 with self.assertRaises(LexerError):
                     run_expression(source)
+
+    def test_undeclared_variable_in_expression(self):
+        with self.assertRaisesRegex(EvaluationError, "nao foi criada"):
+            run_expression("abc")
+
+    def test_scientific_notation_is_not_supported(self):
+        with self.assertRaises(ParserError):
+            run_expression("1e3")
 
     def test_division_by_zero(self):
         for source in ("8 / 0", "1 / (2 - 2)", "1 / -0.0"):
@@ -78,6 +86,42 @@ class LanguageTests(unittest.TestCase):
     def test_depth_limit(self):
         with self.assertRaises(EvaluationError):
             run_expression("(" * 2000 + "1" + ")" * 2000)
+
+    def test_variables_and_statements(self):
+        from cminusminus import compile_statement, run_statement
+
+        variables = {}
+        self.assertIsNone(run_statement("cria total = 2 + 3 * 4", variables))
+        self.assertEqual(run_statement("mostrar(total)", variables), 14)
+        self.assertIsNone(run_statement("total = total + 6", variables))
+        self.assertEqual(run_statement("total", variables), 20)
+        self.assertEqual(
+            compile_statement("cria numero = 3").__class__.__name__,
+            "CreateStatement",
+        )
+
+    def test_variable_errors(self):
+        from cminusminus import run_statement
+
+        variables = {}
+        with self.assertRaisesRegex(EvaluationError, "nao foi criada"):
+            run_statement("valor = 2", variables)
+        run_statement("cria valor = 2", variables)
+        with self.assertRaisesRegex(EvaluationError, "ja foi criada"):
+            run_statement("cria valor = 3", variables)
+
+    def test_statement_syntax_errors(self):
+        from cminusminus import compile_statement
+
+        for source in ("cria = 2", "cria x 2", "mostrar()", "mostrar(2", "x ="):
+            with self.subTest(source=source), self.assertRaises(ParserError):
+                compile_statement(source)
+
+    def test_identifiers_are_tokenized(self):
+        self.assertEqual(
+            [token.kind for token in tokenize("cria resultado = valor_2")],
+            ["CREATE", "IDENTIFIER", "=", "IDENTIFIER", "EOF"],
+        )
 
 
 if __name__ == "__main__":
