@@ -60,5 +60,14 @@ class AssignmentStatement:
 class ShowStatement:
     expression: Node
 
+@dataclass(frozen=True)
+class IfStatement:
+    condition: Node
+    consequent: "Statement"
+    position: int
 
-Statement = ExpressionStatement | CreateStatement | AssignmentStatement | ShowStatement
+Statement = ExpressionStatement | CreateStatement | AssignmentStatement | ShowStatement | IfStatement
+
+
+
+
