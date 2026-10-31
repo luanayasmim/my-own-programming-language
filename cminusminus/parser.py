@@ -5,6 +5,7 @@ from .ast_nodes import (
     BinaryOperation,
     CreateStatement,
     ExpressionStatement,
+    IfStatement,
     Node,
     Number,
     ShowStatement,
@@ -53,6 +54,11 @@ class Parser:
             name = self.advance()
             self.advance()
             statement = AssignmentStatement(name.text, self.expression(), name.position)
+        elif self.current.kind == "IF":
+            token_if = self.advance()
+            condition = self.expression()
+            consequent = self.parse_statement()
+            statement = IfStatement(condition, consequent, token_if.position)
         else:
             statement = ExpressionStatement(self.expression())
         if self.current.kind != "EOF":
@@ -68,7 +74,7 @@ class Parser:
     def expect_identifier(self) -> Token:
         return self.expect("IDENTIFIER")
 
-    def expression(self) -> Node:
+    def additive(self) -> Node:
         node = self.term()
         while self.current.kind in ("+", "-"):
             operator = self.advance()
@@ -87,6 +93,13 @@ class Parser:
             operator = self.advance()
             return UnaryOperation(operator.kind, self.unary(), operator.position)
         return self.primary()
+
+    def expression(self) -> Node:
+        node = self.additive()
+        while self.current.kind in ("==", "!=", "<", ">"):
+            operator = self.advance()
+            node = BinaryOperation(node, operator.kind, self.additive(), operator.position)
+        return node
 
     def primary(self) -> Node:
         token = self.current

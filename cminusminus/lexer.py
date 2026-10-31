@@ -18,7 +18,19 @@ def tokenize(source: str) -> list[Token]:
         if character.isspace():
             position += 1
             continue
-        if character in "+-*/()=":
+
+        if character in "=!<>":
+            if position + 1 < len(source) and source[position + 1] == "=":
+                op = character + "="
+                tokens.append(Token(op, op, position))
+                position += 2
+                continue
+            if character == "!":
+                raise LexerError("Caractere invalido: '!' solto (esperado '!=')", position)
+            tokens.append(Token(character, character, position))
+            position += 1
+            continue
+        if character in "+-*/()":
             tokens.append(Token(character, character, position))
             position += 1
             continue
@@ -64,7 +76,7 @@ def tokenize(source: str) -> list[Token]:
             ):
                 position += 1
             text = source[start:position]
-            kind = {"cria": "CREATE", "mostrar": "SHOW"}.get(text, "IDENTIFIER")
+            kind = {"cria": "CREATE", "mostrar": "SHOW", "se": "IF"}.get(text, "IDENTIFIER")
             tokens.append(Token(kind, text, start))
             continue
         if character in "0123456789":

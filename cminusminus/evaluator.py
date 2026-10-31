@@ -6,6 +6,7 @@ from .ast_nodes import (
     BinaryOperation,
     CreateStatement,
     ExpressionStatement,
+    IfStatement,
     Node,
     Number,
     ShowStatement,
@@ -62,6 +63,16 @@ def evaluate(node: Node, variables: MutableMapping[str, Value] | None = None) ->
                     if right == 0:
                         raise EvaluationError("Divisao por zero", node.position)
                     result = left / right
+
+            elif node.operator in ("==", "!=", "<", ">"):
+                if node.operator == "==":
+                    result = 1 if left == right else 0
+                elif node.operator == "!=":
+                    result = 1 if left != right else 0
+                elif node.operator == "<":
+                    result = 1 if left < right else 0
+                elif node.operator == ">":
+                    result = 1 if left > right else 0
             else:
                 raise EvaluationError("Operador binario desconhecido", node.position)
         except OverflowError as error:
@@ -91,4 +102,9 @@ def execute(
         return None
     if isinstance(statement, (ExpressionStatement, ShowStatement)):
         return evaluate(statement.expression, variables)
+    if isinstance(statement, IfStatement):
+        condicao_valor = evaluate(statement.condition, variables)
+        if isinstance(condicao_valor, (int, float)) and condicao_valor != 0:
+            return execute(statement.consequent, variables)
+        return None
     raise TypeError("Comando desconhecido")
