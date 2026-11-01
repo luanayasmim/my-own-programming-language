@@ -1,3 +1,4 @@
+
 from dataclasses import dataclass
 
 Value = int | float | str
@@ -60,14 +61,32 @@ class AssignmentStatement:
 class ShowStatement:
     expression: Node
 
+
+@dataclass(frozen=True)
+class BlockStatement:
+    statements: tuple["Statement", ...]
+
+
 @dataclass(frozen=True)
 class IfStatement:
     condition: Node
     consequent: "Statement"
     position: int
 
-Statement = ExpressionStatement | CreateStatement | AssignmentStatement | ShowStatement | IfStatement
+
+@dataclass(frozen=True)
+class WhileStatement:
+    condition: Node
+    body: BlockStatement
+    position: int
 
 
-
-
+Statement = (
+    ExpressionStatement
+    | CreateStatement
+    | AssignmentStatement
+    | ShowStatement
+    | BlockStatement
+    | IfStatement
+    | WhileStatement
+)
