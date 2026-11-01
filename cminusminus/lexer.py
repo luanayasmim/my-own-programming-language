@@ -1,3 +1,4 @@
+
 from dataclasses import dataclass
 
 from .errors import LexerError
@@ -30,10 +31,12 @@ def tokenize(source: str) -> list[Token]:
             tokens.append(Token(character, character, position))
             position += 1
             continue
+
         if character in "+-*/()":
             tokens.append(Token(character, character, position))
             position += 1
             continue
+
         if character in "\"'":
             quote = character
             start = position
@@ -68,6 +71,7 @@ def tokenize(source: str) -> list[Token]:
             position += 1
             tokens.append(Token("STRING", "".join(value), start))
             continue
+
         if character.isascii() and (character.isalpha() or character == "_"):
             start = position
             position += 1
@@ -75,7 +79,7 @@ def tokenize(source: str) -> list[Token]:
                 source[position].isalnum() or source[position] == "_"
             ):
                 position += 1
-                         text = source[start:position]
+            text = source[start:position]
             kind = {
                 "cria": "CREATE",
                 "mostrar": "SHOW",
@@ -86,7 +90,8 @@ def tokenize(source: str) -> list[Token]:
 
             tokens.append(Token(kind, text, start))
             continue
-            if character in "0123456789":
+
+        if character in "0123456789":
             start = position
             while position < len(source) and source[position] in "0123456789":
                 position += 1
@@ -99,6 +104,8 @@ def tokenize(source: str) -> list[Token]:
                     raise LexerError("Esperado um digito depois do ponto decimal", position)
             tokens.append(Token("NUMBER", source[start:position], start))
             continue
+
         raise LexerError(f"Caractere invalido: {character!r}", position)
+
     tokens.append(Token("EOF", "", len(source)))
     return tokens
