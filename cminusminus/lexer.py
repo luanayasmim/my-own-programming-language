@@ -76,8 +76,15 @@ def tokenize(source: str) -> list[Token]:
             ):
                 position += 1
             text = source[start:position]
-            kind = {"cria": "CREATE", "mostrar": "SHOW", "se": "IF"}.get(text, "IDENTIFIER")
-            tokens.append(Token(kind, text, start))
+         kind = {
+    "cria": "CREATE",
+    "mostrar": "SHOW",
+    "se": "IF",
+    "enquanto": "WHILE",
+    "fim_enquanto": "END_WHILE",
+}.get(text, "IDENTIFIER")          
+        
+        tokens.append(Token(kind, text, start))
             continue
         if character in "0123456789":
             start = position
