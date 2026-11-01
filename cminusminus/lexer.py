@@ -75,18 +75,18 @@ def tokenize(source: str) -> list[Token]:
                 source[position].isalnum() or source[position] == "_"
             ):
                 position += 1
-         text = source[start:position]
-kind = {
-    "cria": "CREATE",
-    "mostrar": "SHOW",
-    "se": "IF",
-    "enquanto": "WHILE",
-    "fim_enquanto": "END_WHILE",
-}.get(text, "IDENTIFIER")
+                         text = source[start:position]
+            kind = {
+                "cria": "CREATE",
+                "mostrar": "SHOW",
+                "se": "IF",
+                "enquanto": "WHILE",
+                "fim_enquanto": "END_WHILE",
+            }.get(text, "IDENTIFIER")
 
-tokens.append(Token(kind, text, start))
-continue
-        if character in "0123456789":
+            tokens.append(Token(kind, text, start))
+            continue
+            if character in "0123456789":
             start = position
             while position < len(source) and source[position] in "0123456789":
                 position += 1
