@@ -117,12 +117,30 @@ class LanguageTests(unittest.TestCase):
             with self.subTest(source=source), self.assertRaises(ParserError):
                 compile_statement(source)
 
+
     def test_identifiers_are_tokenized(self):
         self.assertEqual(
             [token.kind for token in tokenize("cria resultado = valor_2")],
             ["CREATE", "IDENTIFIER", "=", "IDENTIFIER", "EOF"],
         )
 
+    def test_while_keywords_are_tokenized(self):
+        tokens = tokenize("enquanto fim_enquanto")
+
+        self.assertEqual(
+            [token.kind for token in tokens],
+            ["WHILE", "END_WHILE", "EOF"],
+        )
+
+    def test_while_keywords_keep_their_text(self):
+        tokens = tokenize("enquanto fim_enquanto")
+
+        self.assertEqual(
+            [token.text for token in tokens],
+            ["enquanto", "fim_enquanto", ""],
+        )
+
+        
     def test_string_literals_and_concatenation(self):
         from cminusminus import run_statement
 
