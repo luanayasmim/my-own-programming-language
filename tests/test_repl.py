@@ -82,6 +82,27 @@ class ReplTests(unittest.TestCase):
             self.assertEqual(result.returncode, 0, result.stderr)
             self.assertEqual(result.stdout, "Ola, Ada! 2 + 3 = 5\n")
 
+    def test_file_executes_while_block(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "programa.cmm"
+            path.write_text(
+                "cria i = 1\n"
+                "enquanto i < 4\n"
+                "mostrar(i)\n"
+                "i = i + 1\n"
+                "fim_enquanto\n",
+                encoding="utf-8",
+            )
+            result = subprocess.run(
+                [sys.executable, "-m", "cminusminus", "--file", str(path)],
+                capture_output=True,
+                text=True,
+                cwd=Path(__file__).resolve().parents[1],
+                timeout=10,
+            )
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertEqual(result.stdout, "1\n2\n3\n")
+
     def test_file_syntax_error_prevents_execution(self):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "programa.cmm"

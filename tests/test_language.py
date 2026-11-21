@@ -140,6 +140,50 @@ class LanguageTests(unittest.TestCase):
             ["enquanto", "fim_enquanto", ""],
         )
 
+    def test_while_program(self):
+        from cminusminus import run_program
+
+        variables = {}
+        outputs = run_program(
+            "cria i = 1\n"
+            "enquanto i < 4\n"
+            "mostrar(i)\n"
+            "i = i + 1\n"
+            "fim_enquanto",
+            variables,
+        )
+
+        self.assertEqual(outputs, [1, 2, 3])
+        self.assertEqual(variables["i"], 4)
+
+    def test_nested_while_program(self):
+        from cminusminus import run_program
+
+        variables = {}
+        outputs = run_program(
+            "cria i = 1\n"
+            "cria j = 1\n"
+            "enquanto i < 3\n"
+            "j = 1\n"
+            "enquanto j < 3\n"
+            "mostrar(i * 10 + j)\n"
+            "j = j + 1\n"
+            "fim_enquanto\n"
+            "i = i + 1\n"
+            "fim_enquanto",
+            variables,
+        )
+
+        self.assertEqual(outputs, [11, 12, 21, 22])
+
+    def test_unmatched_while_markers(self):
+        from cminusminus import compile_program
+
+        with self.assertRaises(ParserError):
+            compile_program("enquanto 1\nmostrar(1)")
+        with self.assertRaises(ParserError):
+            compile_program("fim_enquanto")
+
         
     def test_string_literals_and_concatenation(self):
         from cminusminus import run_statement

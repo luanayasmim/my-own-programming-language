@@ -4,6 +4,7 @@ import math
 from .ast_nodes import (
     AssignmentStatement,
     BinaryOperation,
+    BlockStatement,
     CreateStatement,
     ExpressionStatement,
     IfStatement,
@@ -15,6 +16,7 @@ from .ast_nodes import (
     UnaryOperation,
     Value,
     Variable,
+    WhileStatement,
 )
 from .errors import EvaluationError
 
@@ -84,7 +86,9 @@ def evaluate(node: Node, variables: MutableMapping[str, Value] | None = None) ->
 
 
 def execute(
-    statement: Statement, variables: MutableMapping[str, Value]
+    statement: Statement,
+    variables: MutableMapping[str, Value],
+    on_output=None,
 ) -> Value | None:
     if isinstance(statement, CreateStatement):
         if statement.name in variables:
@@ -101,10 +105,32 @@ def execute(
         variables[statement.name] = evaluate(statement.expression, variables)
         return None
     if isinstance(statement, (ExpressionStatement, ShowStatement)):
-        return evaluate(statement.expression, variables)
+        result = evaluate(statement.expression, variables)
+        if on_output is not None:
+            on_output(result)
+        return result
     if isinstance(statement, IfStatement):
         condicao_valor = evaluate(statement.condition, variables)
         if isinstance(condicao_valor, (int, float)) and condicao_valor != 0:
-            return execute(statement.consequent, variables)
+            return execute(statement.consequent, variables, on_output)
+        return None
+    if isinstance(statement, BlockStatement):
+        last_result = None
+        for child in statement.statements:
+            result = execute(child, variables, on_output)
+            if result is not None:
+                last_result = result
+        return last_result
+    if isinstance(statement, WhileStatement):
+        condicao_valor = evaluate(statement.condition, variables)
+        repetitions = 0
+        while isinstance(condicao_valor, (int, float)) and condicao_valor != 0:
+            repetitions += 1
+            if repetitions > 10000:
+                raise EvaluationError(
+                    "Limite de repeticoes do enquanto excedido", statement.position
+                )
+            execute(statement.body, variables, on_output)
+            condicao_valor = evaluate(statement.condition, variables)
         return None
     raise TypeError("Comando desconhecido")

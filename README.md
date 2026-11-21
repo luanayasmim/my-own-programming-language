@@ -69,12 +69,16 @@ antes de executar qualquer comando; erros identificam o arquivo e a linha.
 - Decimais com digitos dos dois lados do ponto: `0.5`, `3.14`.
 - Strings entre aspas simples ou duplas: `"Ola"` ou `'Ola'`.
 - Operadores: `+`, `-`, `*`, `/`.
+- Operadores de comparacao: `==`, `!=`, `<`, `>`.
+- Condicional simples: `se`, para executar um unico comando quando a condicao for verdadeira.
+- Repeticao: `enquanto` ... `fim_enquanto`, para repetir um bloco de comandos.
 - Agrupamento: `(2 + 3) * 4`.
 - Sinais unarios: `-5`, `+3`, `-(2 + 4)`, `2 * -3`.
 - Criar variavel: `cria total = 2 + 3 * 4`.
 - Atribuir a variavel existente: `total = total + 6`.
 - Usar variaveis em expressoes: `total / 2`.
 - Mostrar um valor: `mostrar(total)` ou `mostrar(2 + 3)`.
+- Comparar valores: `se total == 14 mostrar(total)`.
 - Concatenar strings e resultados com `+`: `mostrar("Total: " + (2 + 3))`.
 - Nomes de variaveis comecam por letra ASCII ou `_` e podem conter digitos.
 - Espacos em branco entre tokens sao ignorados.
@@ -90,21 +94,95 @@ valores numericos. Tambem nao ha comentarios, potencia, multiplicacao implicita
 ou notacao cientifica. Entradas como `.5`, `1.`, `1,5`, `2(3)` e `1e3` sao
 rejeitadas.
 
+O condicional usa a palavra em portugues `se` seguida de uma expressao e de
+um unico comando:
+
+```text
+cria total = 14
+se total == 14 mostrar("igual")
+se total != 10 mostrar("diferente")
+se total < 20 mostrar("menor")
+se total > 10 mostrar("maior")
+```
+
+Os operadores de comparacao sao `==` (igual), `!=` (diferente), `<` (menor)
+e `>` (maior). Uma comparacao resulta em `1` quando verdadeira e `0` quando
+falsa. No `se`, qualquer numero diferente de `0` e considerado verdadeiro;
+`0` e considerado falso. Strings nao sao consideradas uma condicao valida.
+
+Cada `se` executa somente o comando imediatamente seguinte. Isso permite
+declaracoes, atribuicoes, `mostrar(...)`, expressao ou outro `se`:
+
+```text
+se total > 10 total = total + 1
+se total > 10 mostrar(total)
+se total > 10 se total < 20 mostrar("entre 10 e 20")
+```
+
+Nao existe `senao`/`else`, bloco com varios comandos nem os operadores `<=`,
+`>=`, `&&` ou `||`.
+
+## Enquanto
+
+O bloco `enquanto` repete os comandos internos enquanto a condicao numerica
+for diferente de `0`:
+
+```text
+cria i = 1
+
+enquanto i < 4
+mostrar(i)
+i = i + 1
+fim_enquanto
+```
+
+Esse exemplo imprime `1`, `2` e `3`. A condicao deve ser reavaliada a cada
+iteracao; normalmente, o corpo precisa alterar uma variavel usada pela
+condicao para evitar um loop infinito.
+
+O corpo pode conter declaracoes, atribuicoes, `mostrar(...)`, expressoes,
+`se` e outros blocos `enquanto`. Os blocos podem ser aninhados:
+
+```text
+cria i = 1
+cria j = 1
+
+enquanto i < 3
+j = 1
+enquanto j < 3
+mostrar(i * 10 + j)
+j = j + 1
+fim_enquanto
+i = i + 1
+fim_enquanto
+```
+
+No REPL, o comando `enquanto` inicia o bloco e aguarda as linhas seguintes.
+Ao receber `fim_enquanto`, executa o bloco completo. Arquivos `.cmm` podem
+usar a mesma estrutura, com uma instrucao por linha.
+
+Se o bloco nao termina apos 10.000 repeticoes, o interpretador informa um
+limite de repeticoes excedido.
+
 ## Gramatica
 
 ```ebnf
-comando   = declaracao | atribuicao | mostrar | expressao ;
+comando    = declaracao | atribuicao | mostrar | se | enquanto | expressao ;
 declaracao = "cria", IDENTIFICADOR, "=", expressao ;
 atribuicao = IDENTIFICADOR, "=", expressao ;
-mostrar   = "mostrar", "(", expressao, ")" ;
-expressao = termo, { ("+" | "-"), termo } ;
-termo     = unario, { ("*" | "/"), unario } ;
-unario    = ("+" | "-"), unario | primario ;
-primario  = NUMERO | STRING | IDENTIFICADOR | "(", expressao, ")" ;
-NUMERO    = DIGITO, { DIGITO }, [ ".", DIGITO, { DIGITO } ] ;
-STRING    = '"', { CARACTERE | ESCAPE }, '"' | "'", { CARACTERE | ESCAPE }, "'" ;
-ESCAPE    = "\\", ("n" | "r" | "t" | "\\" | '"' | "'") ;
-DIGITO    = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" ;
+mostrar    = "mostrar", "(", expressao, ")" ;
+se         = "se", expressao, comando ;
+enquanto   = "enquanto", expressao, { comando }, "fim_enquanto" ;
+expressao  = comparacao ;
+comparacao = adicao, { ("==" | "!=" | "<" | ">"), adicao } ;
+adicao     = termo, { ("+" | "-"), termo } ;
+termo      = unario, { ("*" | "/"), unario } ;
+unario     = ("+" | "-"), unario | primario ;
+primario   = NUMERO | STRING | IDENTIFICADOR | "(", expressao, ")" ;
+NUMERO     = DIGITO, { DIGITO }, [ ".", DIGITO, { DIGITO } ] ;
+STRING     = '"', { CARACTERE | ESCAPE }, '"' | "'", { CARACTERE | ESCAPE }, "'" ;
+ESCAPE     = "\\", ("n" | "r" | "t" | "\\" | '"' | "'" ) ;
+DIGITO     = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" ;
 IDENTIFICADOR = (LETRA | "_"), { LETRA | DIGITO | "_" } ;
 LETRA     = "A" | ... | "Z" | "a" | ... | "z" ;
 ```
