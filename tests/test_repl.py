@@ -170,9 +170,9 @@ class ReplTests(unittest.TestCase):
             timeout=10,
         )
         self.assertEqual(result.returncode, 0, result.stderr)
-        self.assertIn("c--> 14", result.stdout)
+        self.assertIn("c+-> 14", result.stdout)
         self.assertIn("Divisao por zero", result.stdout)
-        self.assertIn("c--> 20", result.stdout)
+        self.assertIn("c+-> 20", result.stdout)
 
 
 if __name__ == "__main__":

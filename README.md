@@ -1,4 +1,4 @@
-# c--
+# c+-
 
 Linguagem interpretada para calculos matematicos simples, destinada ao
 aprendizado de analise lexica, analise sintatica e interpretacao.
@@ -19,25 +19,25 @@ python -m cplusminus
 
 ```text
 cplusminus
-c--> 2 + 3 * 4
+c+-> 2 + 3 * 4
 14
-c--> cria total = 2 + 3 * 4
-c--> mostrar(total)
+c+-> cria total = 2 + 3 * 4
+c+-> mostrar(total)
 14
-c--> total = total + 6
-c--> mostrar(total)
+c+-> total = total + 6
+c+-> mostrar(total)
 20
-c--> (2 + 3) * 4
+c+-> (2 + 3) * 4
 20
-c--> -10 / 4
+c+-> -10 / 4
 -2.5
-c--> 1 / 0
+c+-> 1 / 0
 Erro: Divisao por zero (coluna 3)
 1 / 0
   ^
-c--> 2 + 2
+c+-> 2 + 2
 4
-c--> sair
+c+-> sair
 ```
 
 Linhas vazias sao ignoradas. Use `sair`, Ctrl+C ou fim de entrada para encerrar.

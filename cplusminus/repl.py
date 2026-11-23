@@ -96,7 +96,7 @@ def repl() -> None:
     while_depth = 0
     while True:
         try:
-            source = input("c--> ")
+            source = input("c+-> ")
         except (EOFError, KeyboardInterrupt):
             print()
             return
