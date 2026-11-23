@@ -90,7 +90,7 @@ def run_file(path: Path) -> int:
 
 
 def repl() -> None:
-    print("cminusminus")
+    print("cplusminus")
     variables: dict[str, Value] = {}
     pending_lines: list[str] = []
     while_depth = 0
@@ -146,7 +146,7 @@ def repl() -> None:
 
 def main(argv: list[str] | None = None) -> int:
     argument_parser = argparse.ArgumentParser(
-        prog="cminusminus", description="Interpretador de calculos matematicos simples."
+        prog="cplusminus", description="Interpretador de calculos matematicos simples."
     )
     argument_parser.add_argument("expression", nargs="?", help="expressao matematica")
     argument_parser.add_argument("--file", type=Path, help="arquivo com uma expressao por linha")

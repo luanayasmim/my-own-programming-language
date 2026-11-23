@@ -7,8 +7,8 @@ import unittest
 from contextlib import redirect_stderr, redirect_stdout
 from unittest.mock import patch
 
-from cminusminus.errors import EvaluationError
-from cminusminus.repl import format_result, main, repl, run_file
+from cplusminus.errors import EvaluationError
+from cplusminus.repl import format_result, main, repl, run_file
 
 
 class ReplTests(unittest.TestCase):
@@ -55,7 +55,7 @@ class ReplTests(unittest.TestCase):
                 encoding="utf-8",
             )
             result = subprocess.run(
-                [sys.executable, "-m", "cminusminus", "--file", str(path)],
+                [sys.executable, "-m", "cplusminus", "--file", str(path)],
                 capture_output=True,
                 text=True,
                 cwd=Path(__file__).resolve().parents[1],
@@ -73,7 +73,7 @@ class ReplTests(unittest.TestCase):
                 encoding="utf-8",
             )
             result = subprocess.run(
-                [sys.executable, "-m", "cminusminus", "--file", str(path)],
+                [sys.executable, "-m", "cplusminus", "--file", str(path)],
                 capture_output=True,
                 text=True,
                 cwd=Path(__file__).resolve().parents[1],
@@ -94,7 +94,7 @@ class ReplTests(unittest.TestCase):
                 encoding="utf-8",
             )
             result = subprocess.run(
-                [sys.executable, "-m", "cminusminus", "--file", str(path)],
+                [sys.executable, "-m", "cplusminus", "--file", str(path)],
                 capture_output=True,
                 text=True,
                 cwd=Path(__file__).resolve().parents[1],
@@ -138,7 +138,7 @@ class ReplTests(unittest.TestCase):
             path = Path(directory) / "programa.cmm"
             path.write_text("mostrar(2 + 3)\n", encoding="utf-8-sig")
             result = subprocess.run(
-                [sys.executable, "-m", "cminusminus", "--file", str(path)],
+                [sys.executable, "-m", "cplusminus", "--file", str(path)],
                 capture_output=True,
                 text=True,
                 cwd=Path(__file__).resolve().parents[1],
@@ -162,7 +162,7 @@ class ReplTests(unittest.TestCase):
 
     def test_terminal_session(self):
         result = subprocess.run(
-            [sys.executable, "-m", "cminusminus"],
+            [sys.executable, "-m", "cplusminus"],
             input="2 + 3 * 4\n1 / 0\n(2 + 3) * 4\nsair\n",
             capture_output=True,
             text=True,

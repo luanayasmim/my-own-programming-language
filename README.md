@@ -14,11 +14,11 @@ Execute os comandos na pasta raiz do projeto.
 Abrir o terminal interativo:
 
 ```console
-python -m cminusminus
+python -m cplusminus
 ```
 
 ```text
-cminusminus
+cplusminus
 c--> 2 + 3 * 4
 14
 c--> cria total = 2 + 3 * 4
@@ -46,8 +46,8 @@ No Windows, o fim de entrada pode ser enviado com Ctrl+Z seguido de Enter.
 Calcular uma unica expressao:
 
 ```console
-python -m cminusminus "(2 + 3) * 4"
-python -m cminusminus -- "-2 + 3"
+python -m cplusminus "(2 + 3) * 4"
+python -m cplusminus -- "-2 + 3"
 ```
 
 O separador `--` evita que uma expressao iniciada por `-` seja interpretada
@@ -57,7 +57,7 @@ erros e retornam codigo 1; calculos bem-sucedidos retornam codigo 0.
 Executar um arquivo UTF-8 com um comando por linha:
 
 ```console
-python -m cminusminus --file programa.cmm
+python -m cplusminus --file programa.cmm
 ```
 
 Linhas vazias sao ignoradas. O programa valida a sintaxe de todas as linhas
@@ -204,7 +204,7 @@ O parser exige o consumo de toda a entrada.
 A funcao publica `run_expression` integra essas etapas:
 
 ```python
-from cminusminus import LanguageError, run_expression
+from cplusminus import LanguageError, run_expression
 
 try:
     print(run_expression("2 + 3 * 4"))

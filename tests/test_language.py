@@ -1,10 +1,10 @@
 import unittest
 
-from cminusminus import run_expression
-from cminusminus.ast_nodes import BinaryOperation, Number
-from cminusminus.errors import EvaluationError, LexerError, ParserError
-from cminusminus.lexer import tokenize
-from cminusminus.parser import parse
+from cplusminus import run_expression
+from cplusminus.ast_nodes import BinaryOperation, Number
+from cplusminus.errors import EvaluationError, LexerError, ParserError
+from cplusminus.lexer import tokenize
+from cplusminus.parser import parse
 
 
 class LanguageTests(unittest.TestCase):
@@ -88,7 +88,7 @@ class LanguageTests(unittest.TestCase):
             run_expression("(" * 2000 + "1" + ")" * 2000)
 
     def test_variables_and_statements(self):
-        from cminusminus import compile_statement, run_statement
+        from cplusminus import compile_statement, run_statement
 
         variables = {}
         self.assertIsNone(run_statement("cria total = 2 + 3 * 4", variables))
@@ -101,7 +101,7 @@ class LanguageTests(unittest.TestCase):
         )
 
     def test_variable_errors(self):
-        from cminusminus import run_statement
+        from cplusminus import run_statement
 
         variables = {}
         with self.assertRaisesRegex(EvaluationError, "nao foi criada"):
@@ -111,7 +111,7 @@ class LanguageTests(unittest.TestCase):
             run_statement("cria valor = 3", variables)
 
     def test_statement_syntax_errors(self):
-        from cminusminus import compile_statement
+        from cplusminus import compile_statement
 
         for source in ("cria = 2", "cria x 2", "mostrar()", "mostrar(2", "x ="):
             with self.subTest(source=source), self.assertRaises(ParserError):
@@ -141,7 +141,7 @@ class LanguageTests(unittest.TestCase):
         )
 
     def test_while_program(self):
-        from cminusminus import run_program
+        from cplusminus import run_program
 
         variables = {}
         outputs = run_program(
@@ -157,7 +157,7 @@ class LanguageTests(unittest.TestCase):
         self.assertEqual(variables["i"], 4)
 
     def test_nested_while_program(self):
-        from cminusminus import run_program
+        from cplusminus import run_program
 
         variables = {}
         outputs = run_program(
@@ -177,7 +177,7 @@ class LanguageTests(unittest.TestCase):
         self.assertEqual(outputs, [11, 12, 21, 22])
 
     def test_unmatched_while_markers(self):
-        from cminusminus import compile_program
+        from cplusminus import compile_program
 
         with self.assertRaises(ParserError):
             compile_program("enquanto 1\nmostrar(1)")
@@ -186,7 +186,7 @@ class LanguageTests(unittest.TestCase):
 
         
     def test_string_literals_and_concatenation(self):
-        from cminusminus import run_statement
+        from cplusminus import run_statement
 
         variables = {}
         self.assertEqual(run_statement('mostrar("O resultado e " + (2 + 3))', variables),
@@ -196,7 +196,7 @@ class LanguageTests(unittest.TestCase):
         self.assertEqual(run_statement('"aspas: \\"ok\\""', variables), 'aspas: "ok"')
 
     def test_string_variables_and_concatenation(self):
-        from cminusminus import run_statement
+        from cplusminus import run_statement
 
         variables = {}
         self.assertIsNone(run_statement('cria saudacao = "Ola, "', variables))
@@ -205,7 +205,7 @@ class LanguageTests(unittest.TestCase):
         self.assertEqual(run_statement('mostrar("Total: " + (10 / 2))', variables), "Total: 5.0")
 
     def test_non_additive_string_operations_are_rejected(self):
-        from cminusminus import run_statement
+        from cplusminus import run_statement
 
         for source in ('"texto" - 1', '"texto" * 2', '-"texto"'):
             with self.subTest(source=source), self.assertRaisesRegex(
