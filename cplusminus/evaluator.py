@@ -66,15 +66,19 @@ def evaluate(node: Node, variables: MutableMapping[str, Value] | None = None) ->
                         raise EvaluationError("Divisao por zero", node.position)
                     result = left / right
 
-            elif node.operator in ("==", "!=", "<", ">"):
+            elif node.operator in ("==", "!=", "<", "<=", ">", ">="):
                 if node.operator == "==":
                     result = 1 if left == right else 0
                 elif node.operator == "!=":
                     result = 1 if left != right else 0
                 elif node.operator == "<":
                     result = 1 if left < right else 0
+                elif node.operator == "<=":
+                    result = 1 if left <= right else 0
                 elif node.operator == ">":
                     result = 1 if left > right else 0
+                elif node.operator == ">=":
+                    result = 1 if left >= right else 0
             else:
                 raise EvaluationError("Operador binario desconhecido", node.position)
         except OverflowError as error:
@@ -113,6 +117,8 @@ def execute(
         condicao_valor = evaluate(statement.condition, variables)
         if isinstance(condicao_valor, (int, float)) and condicao_valor != 0:
             return execute(statement.consequent, variables, on_output)
+        if statement.alternative is not None:
+            return execute(statement.alternative, variables, on_output)
         return None
     if isinstance(statement, BlockStatement):
         last_result = None

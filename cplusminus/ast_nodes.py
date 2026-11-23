@@ -72,6 +72,7 @@ class IfStatement:
     condition: Node
     consequent: "Statement"
     position: int
+    alternative: "Statement | None" = None
 
 
 @dataclass(frozen=True)

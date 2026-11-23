@@ -46,7 +46,7 @@ class ReplTests(unittest.TestCase):
 
     def test_file_execution(self):
         with tempfile.TemporaryDirectory() as directory:
-            path = Path(directory) / "programa.cmm"
+            path = Path(directory) / "programa.cpm"
             path.write_text(
                 "cria total = 2 + 3 * 4\n"
                 "mostrar(total)\n"
@@ -66,7 +66,7 @@ class ReplTests(unittest.TestCase):
 
     def test_file_prints_concatenated_string_and_expression(self):
         with tempfile.TemporaryDirectory() as directory:
-            path = Path(directory) / "programa.cmm"
+            path = Path(directory) / "programa.cpm"
             path.write_text(
                 'cria nome = "Ada"\n'
                 'mostrar("Ola, " + nome + "! 2 + 3 = " + (2 + 3))\n',
@@ -84,7 +84,7 @@ class ReplTests(unittest.TestCase):
 
     def test_file_executes_while_block(self):
         with tempfile.TemporaryDirectory() as directory:
-            path = Path(directory) / "programa.cmm"
+            path = Path(directory) / "programa.cpm"
             path.write_text(
                 "cria i = 1\n"
                 "enquanto i < 4\n"
@@ -103,9 +103,31 @@ class ReplTests(unittest.TestCase):
             self.assertEqual(result.returncode, 0, result.stderr)
             self.assertEqual(result.stdout, "1\n2\n3\n")
 
+    def test_file_executes_if_else_block(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "programa.cpm"
+            path.write_text(
+                "cria idade = 18\n"
+                "se idade >= 18\n"
+                'mostrar("maior")\n'
+                "senao\n"
+                'mostrar("menor")\n'
+                "fim_se\n",
+                encoding="utf-8",
+            )
+            result = subprocess.run(
+                [sys.executable, "-m", "cplusminus", "--file", str(path)],
+                capture_output=True,
+                text=True,
+                cwd=Path(__file__).resolve().parents[1],
+                timeout=10,
+            )
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertEqual(result.stdout, "maior\n")
+
     def test_file_syntax_error_prevents_execution(self):
         with tempfile.TemporaryDirectory() as directory:
-            path = Path(directory) / "programa.cmm"
+            path = Path(directory) / "programa.cpm"
             path.write_text("mostrar(2 + 3)\nmostrar(\n", encoding="utf-8")
             output = io.StringIO()
             errors = io.StringIO()
@@ -117,7 +139,7 @@ class ReplTests(unittest.TestCase):
 
     def test_file_runtime_error_has_line_number(self):
         with tempfile.TemporaryDirectory() as directory:
-            path = Path(directory) / "programa.cmm"
+            path = Path(directory) / "programa.cpm"
             path.write_text("2 + 3\n1 / 0\n4 + 5\n", encoding="utf-8")
             output = io.StringIO()
             errors = io.StringIO()
@@ -130,12 +152,22 @@ class ReplTests(unittest.TestCase):
     def test_file_not_found(self):
         errors = io.StringIO()
         with redirect_stderr(errors):
-            self.assertEqual(run_file(Path("arquivo-inexistente.cmm")), 1)
+            self.assertEqual(run_file(Path("arquivo-inexistente.cpm")), 1)
         self.assertIn("Erro ao ler arquivo", errors.getvalue())
+
+    def test_file_extension_must_be_cpm(self):
+        errors = io.StringIO()
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "programa.cmm"
+            path.write_text("mostrar(2 + 3)\n", encoding="utf-8")
+            with redirect_stderr(errors):
+                self.assertEqual(run_file(path), 1)
+        self.assertIn("Extensao de arquivo nao suportada", errors.getvalue())
+        self.assertIn(".cpm", errors.getvalue())
 
     def test_file_with_utf8_bom(self):
         with tempfile.TemporaryDirectory() as directory:
-            path = Path(directory) / "programa.cmm"
+            path = Path(directory) / "programa.cpm"
             path.write_text("mostrar(2 + 3)\n", encoding="utf-8-sig")
             result = subprocess.run(
                 [sys.executable, "-m", "cplusminus", "--file", str(path)],

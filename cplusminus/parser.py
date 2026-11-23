@@ -96,7 +96,7 @@ class Parser:
 
     def expression(self) -> Node:
         node = self.additive()
-        while self.current.kind in ("==", "!=", "<", ">"):
+        while self.current.kind in ("==", "!=", "<", "<=", ">", ">="):
             operator = self.advance()
             node = BinaryOperation(node, operator.kind, self.additive(), operator.position)
         return node

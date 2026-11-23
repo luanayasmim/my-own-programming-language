@@ -84,6 +84,8 @@ def tokenize(source: str) -> list[Token]:
                 "cria": "CREATE",
                 "mostrar": "SHOW",
                 "se": "IF",
+                "senao": "ELSE",
+                "fim_se": "END_IF",
                 "enquanto": "WHILE",
                 "fim_enquanto": "END_WHILE",
             }.get(text, "IDENTIFIER")

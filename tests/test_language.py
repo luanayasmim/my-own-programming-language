@@ -156,6 +156,69 @@ class LanguageTests(unittest.TestCase):
         self.assertEqual(outputs, [1, 2, 3])
         self.assertEqual(variables["i"], 4)
 
+    def test_comparison_operators_less_equal_and_greater_equal(self):
+        self.assertEqual(run_expression("3 <= 3"), 1)
+        self.assertEqual(run_expression("2 <= 3"), 1)
+        self.assertEqual(run_expression("4 <= 3"), 0)
+        self.assertEqual(run_expression("3 >= 3"), 1)
+        self.assertEqual(run_expression("4 >= 3"), 1)
+        self.assertEqual(run_expression("2 >= 3"), 0)
+
+    def test_if_else_block(self):
+        from cplusminus import run_program
+
+        variables = {}
+        outputs = run_program(
+            "cria idade = 18\n"
+            "se idade >= 18\n"
+            'mostrar("maior de idade")\n'
+            "senao\n"
+            'mostrar("menor de idade")\n'
+            "fim_se",
+            variables,
+        )
+        self.assertEqual(outputs, ["maior de idade"])
+
+        false_variables = {}
+        outputs = run_program(
+            "cria idade = 12\n"
+            "se idade >= 18\n"
+            'mostrar("maior de idade")\n'
+            "senao\n"
+            'mostrar("menor de idade")\n'
+            "fim_se",
+            false_variables,
+        )
+        self.assertEqual(outputs, ["menor de idade"])
+
+    def test_nested_if_else_and_while_blocks(self):
+        from cplusminus import run_program
+
+        variables = {}
+        outputs = run_program(
+            "cria i = 1\n"
+            "enquanto i <= 3\n"
+            "se i < 3\n"
+            "mostrar(i)\n"
+            "senao\n"
+            "mostrar(30)\n"
+            "fim_se\n"
+            "i = i + 1\n"
+            "fim_enquanto",
+            variables,
+        )
+        self.assertEqual(outputs, [1, 2, 30])
+
+    def test_unmatched_if_markers(self):
+        from cplusminus import compile_program
+
+        with self.assertRaises(ParserError):
+            compile_program("se 1\nmostrar(1)")
+        with self.assertRaises(ParserError):
+            compile_program("senao")
+        with self.assertRaises(ParserError):
+            compile_program("fim_se")
+
     def test_nested_while_program(self):
         from cplusminus import run_program
 

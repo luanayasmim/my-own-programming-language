@@ -57,7 +57,7 @@ erros e retornam codigo 1; calculos bem-sucedidos retornam codigo 0.
 Executar um arquivo UTF-8 com um comando por linha:
 
 ```console
-python -m cplusminus --file programa.cmm
+python -m cplusminus --file programa.cpm
 ```
 
 Linhas vazias sao ignoradas. O programa valida a sintaxe de todas as linhas
@@ -69,8 +69,8 @@ antes de executar qualquer comando; erros identificam o arquivo e a linha.
 - Decimais com digitos dos dois lados do ponto: `0.5`, `3.14`.
 - Strings entre aspas simples ou duplas: `"Ola"` ou `'Ola'`.
 - Operadores: `+`, `-`, `*`, `/`.
-- Operadores de comparacao: `==`, `!=`, `<`, `>`.
-- Condicional simples: `se`, para executar um unico comando quando a condicao for verdadeira.
+- Operadores de comparacao: `==`, `!=`, `<`, `<=`, `>`, `>=`.
+- Condicional simples ou em bloco: `se` ... `fim_se`, com `senao` opcional.
 - Repeticao: `enquanto` ... `fim_enquanto`, para repetir um bloco de comandos.
 - Agrupamento: `(2 + 3) * 4`.
 - Sinais unarios: `-5`, `+3`, `-(2 + 4)`, `2 * -3`.
@@ -119,8 +119,22 @@ se total > 10 mostrar(total)
 se total > 10 se total < 20 mostrar("entre 10 e 20")
 ```
 
-Nao existe `senao`/`else`, bloco com varios comandos nem os operadores `<=`,
-`>=`, `&&` ou `||`.
+Nao existe os operadores `&&` ou `||`.
+
+O `se` tambem pode controlar um bloco com varios comandos:
+
+```text
+cria idade = 18
+
+se idade >= 18
+mostrar("maior de idade")
+senao
+mostrar("menor de idade")
+fim_se
+```
+
+Sem `senao`, o bloco nao executa nada quando a condicao e falsa. Os blocos
+podem ser aninhados em outros `se` e em blocos `enquanto`.
 
 ## Enquanto
 
@@ -158,7 +172,7 @@ fim_enquanto
 ```
 
 No REPL, o comando `enquanto` inicia o bloco e aguarda as linhas seguintes.
-Ao receber `fim_enquanto`, executa o bloco completo. Arquivos `.cmm` podem
+Ao receber `fim_enquanto`, executa o bloco completo. Arquivos `.cpm` podem
 usar a mesma estrutura, com uma instrucao por linha.
 
 Se o bloco nao termina apos 10.000 repeticoes, o interpretador informa um
@@ -171,10 +185,10 @@ comando    = declaracao | atribuicao | mostrar | se | enquanto | expressao ;
 declaracao = "cria", IDENTIFICADOR, "=", expressao ;
 atribuicao = IDENTIFICADOR, "=", expressao ;
 mostrar    = "mostrar", "(", expressao, ")" ;
-se         = "se", expressao, comando ;
+se         = "se", expressao, ( comando | { comando }, [ "senao", { comando } ], "fim_se" ) ;
 enquanto   = "enquanto", expressao, { comando }, "fim_enquanto" ;
 expressao  = comparacao ;
-comparacao = adicao, { ("==" | "!=" | "<" | ">"), adicao } ;
+comparacao = adicao, { ("==" | "!=" | "<" | "<=" | ">" | ">="), adicao } ;
 adicao     = termo, { ("+" | "-"), termo } ;
 termo      = unario, { ("*" | "/"), unario } ;
 unario     = ("+" | "-"), unario | primario ;

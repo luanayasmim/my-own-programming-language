@@ -30,6 +30,12 @@ def format_error(source: str, error: LanguageError) -> str:
 
 
 def run_file(path: Path) -> int:
+    if path.suffix.lower() != ".cpm":
+        print(
+            f"Extensao de arquivo nao suportada: '{path.suffix or '(sem extensao)'}'. Use '.cpm'.",
+            file=sys.stderr,
+        )
+        return 1
     try:
         source = path.read_text(encoding="utf-8-sig")
     except (OSError, UnicodeError) as error:
@@ -42,7 +48,13 @@ def run_file(path: Path) -> int:
             continue
         try:
             tokens = tokenize(stripped)
-            if tokens[0].kind not in ("WHILE", "END_WHILE"):
+            if tokens[0].kind not in (
+                "WHILE",
+                "END_WHILE",
+                "IF",
+                "ELSE",
+                "END_IF",
+            ):
                 compile_statement(stripped)
         except LanguageError as error:
             detail = format_error(stripped, error)
@@ -93,7 +105,7 @@ def repl() -> None:
     print("cplusminus")
     variables: dict[str, Value] = {}
     pending_lines: list[str] = []
-    while_depth = 0
+    block_depth = 0
     while True:
         try:
             source = input("c+-> ")
@@ -112,10 +124,15 @@ def repl() -> None:
             except LanguageError:
                 first_kind = None
             if first_kind == "WHILE":
-                while_depth += 1
-            elif first_kind == "END_WHILE":
-                while_depth -= 1
-            if while_depth > 0:
+                block_depth += 1
+            elif first_kind == "IF":
+                try:
+                    compile_statement(source.strip())
+                except LanguageError:
+                    block_depth += 1
+            elif first_kind in ("END_WHILE", "END_IF"):
+                block_depth -= 1
+            if block_depth > 0:
                 continue
             source = "\n".join(pending_lines)
             pending_lines = []
@@ -126,11 +143,18 @@ def repl() -> None:
                 first_kind = None
             if first_kind == "WHILE":
                 pending_lines = [source]
-                while_depth = 1
+                block_depth = 1
                 continue
+            if first_kind == "IF":
+                try:
+                    compile_statement(source.strip())
+                except LanguageError:
+                    pending_lines = [source]
+                    block_depth = 1
+                    continue
 
         try:
-            if "\n" in source or first_kind in ("WHILE", "END_WHILE"):
+            if "\n" in source or first_kind in ("WHILE", "END_WHILE", "IF", "ELSE", "END_IF"):
                 for result in run_program(source, variables):
                     print(format_result(result))
             else:
